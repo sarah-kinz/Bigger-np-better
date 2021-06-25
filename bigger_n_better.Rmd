@@ -1,0 +1,467 @@
+---
+title: "bigger_n_better"
+author: "SarahKinz"
+date: "5/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dataRetrieval)
+library(tidyverse)
+library(dplyr)
+```
+
+I got the bounding boxes from https://anthonylouisdagostino.com/bounding-boxes-for-all-us-states/.
+
+### Creating BBox that you did not actually need
+```{r}
+VA <- c(-83.675395, 36.540738, -75.242266,	39.466012)
+WV<- c(-83.675395, 36.540738, -75.242266, 39.466012)
+MD<- c(-79.487651, 37.911717, -75.048939, 39.723043)
+DE<- c(-75.788658, 38.451013, -75.048939, 39.839007)
+NY<- c(-79.762152, 40.496103, -71.856214, 45.01585)
+PA<- c(-80.519891, 39.7198, -74.689516, 42.26986)
+DC <- c(-77.119759, 38.791645, -76.909395, 38.99511)
+
+```
+
+### VIRGINIA
+```{r}
+
+### VIRGINIA
+
+VA_sites <- whatNWISdata(stateCd = "VA") 
+
+VA_sites <- VA_sites%>%filter(site_tp_cd == "SP")
+
+#255 unique sites
+ 
+siteNumber <- unique(VA_sites$site_no)
+startDate <- ""
+endDate <- ""
+
+#Discharge
+
+parameterCd<- "00060"
+
+VA_discharge <- readNWISdv(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 4 sites
+
+VA_discharge%>%group_by(site_no)%>%summarise(Mean= mean(Flow), Min= min(Flow), Max= max(Flow), Count= )
+
+more_VA_discharge<- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+## 11 sites
+
+# Temp
+
+parameterCd<- "00010"
+
+VA_temp <- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 198 sites
+
+#Nitrate
+
+parameterCd <- ("00631")
+
+VA_nitrate <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 85 sites
+
+#pH
+
+parameterCd<- c("00400", "00403")
+
+VA_pH <-  readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 211 sites 
+
+#Dissolved Oxygen
+
+#Dissolved Organic Carbon
+
+# you can add the state data you have here:)
+
+```
+
+### WEST VIRGINIA
+```{r}
+### West Virginia
+
+#Getting data from USGS
+
+WV_sites <- whatNWISdata(stateCd = "WV") 
+
+WV_sites <- WV_sites%>%filter(site_tp_cd == "SP")
+
+siteNumber <- unique(WV_sites$site_no)
+startDate <- ""
+endDate <- ""
+
+#Discharge
+
+parameterCd<- "00060"
+
+WV_discharge <- readNWISdv(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 3 sites
+
+more_WV_discharge<- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 2 sites
+
+# Temp
+
+parameterCd<- "00010"
+
+WV_temp <- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 190 sites
+
+#Nitrate
+
+parameterCd <- ("00631")
+
+WV_nitrate <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 92 sites
+
+#pH
+
+parameterCd<- c("00400", "00403")
+
+WV_pH <-  readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 188 sites
+
+#Dissolved Oxygen
+
+#Dissolved Organic Carbon
+
+
+```
+
+
+### MARYLAND
+```{r}
+## Getting Data from USGS
+MD_sites <- whatNWISdata(stateCd = "MD") 
+
+MD_sites <-MD_sites%>%filter(site_tp_cd == "SP")
+
+
+siteNumber <- unique(MD_sites$site_no)
+startDate <- ""
+endDate <- ""
+
+#Discharge
+
+parameterCd<- "00060"
+
+MD_discharge <- readNWISdv(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 1 site
+
+more_MD_discharge<- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 0 sites 
+
+# Temp
+
+parameterCd<- "00010"
+
+MD_temp <- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 127 sites
+
+#Nitrate
+
+parameterCd <- ("00631")
+
+MD_nitrate <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 61 sites
+
+#pH
+
+parameterCd<- c("00400", "00403")
+
+MD_pH <-  readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+
+## 142 sites
+
+#Dissolved Oxygen
+
+#Dissolved Organic Carbon
+
+```
+
+### DELAWARE
+```{r}
+## Getting Data from USGS
+DE_sites <- whatNWISdata(stateCd = "DE") 
+
+DE_sites <-DE_sites%>%filter(site_tp_cd == "SP")
+
+siteNumber <- unique(DE_sites$site_no)
+startDate <- ""
+endDate <- ""
+
+#Discharge
+
+parameterCd<- "00060"
+
+DE_discharge <- readNWISdv(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 0 sites
+
+more_DE_discharge<- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 0 sites
+
+# Temp
+
+parameterCd<- "00010"
+
+DE_temp <- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 0 sites
+
+#Nitrate
+
+parameterCd <- ("00631")
+
+DE_nitrate <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 0 sites
+
+#pH
+
+parameterCd<- c("00400", "00403")
+
+DE_pH <-  readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+
+## 0 sites
+
+#Dissolved Oxygen
+
+#Dissolved Organic Carbon
+
+```
+
+### NEW YORK
+```{r}
+## Getting Data from USGS
+NY_sites <- whatNWISdata(stateCd = "NY") 
+
+NY_sites <-NY_sites%>%filter(site_tp_cd == "SP")
+
+siteNumber <- unique(NY_sites$site_no)
+startDate <- ""
+endDate <- ""
+
+#Discharge
+
+parameterCd<- "00060"
+
+NY_discharge <- readNWISdv(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 0 sites
+
+more_NY_discharge<- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 0 sites
+
+
+# Temp
+
+parameterCd<- "00010"
+
+NY_temp <- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 96 sites
+
+#Nitrate
+
+parameterCd <- ("00631")
+
+NY_nitrate <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 52 sites
+
+#pH
+
+parameterCd<- c("00400", "00403")
+
+NY_pH <-  readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 150 sites
+
+
+#Dissolved Oxygen
+
+#Dissolved Organic Carbon
+
+```
+
+
+### PENNSLVANYIA
+```{r}
+## Getting Data from USGS
+PA_sites <- whatNWISdata(stateCd = "PA") 
+
+PA_sites <-PA_sites%>%filter(site_tp_cd == "SP")
+
+
+siteNumber <- unique(PA_sites$site_no)
+startDate <- ""
+endDate <- ""
+
+#Discharge
+
+parameterCd<- "00060"
+
+PA_discharge <- readNWISdv(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 1 site
+
+more_PA_discharge<- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 59 sites
+
+# Temp
+
+parameterCd<- "00010"
+
+PA_temp <- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 283 sites
+
+#Nitrate
+
+parameterCd <- ("00631")
+
+PA_nitrate <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 80 sites
+
+#pH
+
+parameterCd<- c("00400", "00403")
+
+PA_pH <-  readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 422 sites
+
+
+#Dissolved Oxygen
+
+#Dissolved Organic Carbon
+
+
+## Using data from the state agency
+
+PA_discharge<- read.csv("PA_spring_Discharge.csv")
+PA_discharge<- PA_discharge%>%filter(Discharge.gpm.>=90)%>%
+  filter(Discharge.gpm.<=1100)
+
+PA_chemical<- read.csv("PA_Springs_Chemical.csv")
+
+PA_chemical_small<- PA_chemical%>%
+  pivot_wider(names_from = ParamLongName, values_from = QWValue)%>%select(PASpringID,QWDescription,County,Date,`ELEVATION (FEET NGVD) `,`SAMPLING DEPTH (FEET) `,`GAGE HEIGHT FEET `,`PH WATER WHOLE LABORATORY STANDARD UNITS `,`PH WATER WHOLE FIELD STANDARD UNITS `,`FLOW RATE INSTANTANEOUS (GALLONS/MINUTE) `,`CARBON DIOXIDE DISSOLVED (MG/L AS CO2) `,`CARBON ORGANIC TOTAL (MG/L AS C) `,`OXYGEN DISSOLVED (MG/L) `,`DISCHARGE INSTANTANEOUS CUBIC FEET PER SECOND `,`DISCHARGE CUBIC FEET PER SECOND `,`NITROGEN DISSOLVED (MG/L AS N) `,`NITROGEN NITRITE DISSOLVED (MG/L AS NO2) `,`NITROGEN NITRITE PLUS NITRATE DISSOLVED (MG/L AS N) `,`NITROGEN NITRITE DISSOLVED MG/L AS N `,`NITROGEN NITRATE TOTAL (MG/L AS N) `,`NITROGEN TOTAL (MG/L AS N) `,`NITROGEN NITRATE TOTAL (MG/L AS N) `,`NITROGEN NITRATE DISSOLVED (MG/L AS NO3) `,`NITROGEN NITRATE DISSOLVED (MG/L AS N) `,`DEPTH BELOW LAND SURFACE (WATER LEVEL) (FEET) `,`WATER TEMPERATURE DEGREES CELSIUS `)
+
+# There are some hecking high`NITROGEN NITRITE PLUS NITRATE DISSOLVED (MG/L AS N) `) values.
+
+
+```
+
+
+
+### DISTRICT OF COLUMBIA
+```{r}
+## Getting Data from USGS
+DC_sites <- whatNWISdata(stateCd = "DC") 
+
+DC_sites <-DC_sites%>%filter(site_tp_cd == "SP")
+
+siteNumber <- unique(DC_sites$site_no)
+startDate <- ""
+endDate <- ""
+
+#Discharge
+
+parameterCd<- "00060"
+
+DC_discharge <- readNWISdv(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 0 sites
+
+more_DC_discharge<- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+# Temp
+
+parameterCd<- "00010"
+
+DC_temp <- readNWISqw(siteNumber, parameterCd, 
+        startDate, endDate)%>% renameNWISColumns()
+
+## 1 site
+
+#Nitrate
+
+parameterCd <- ("00631")
+
+DC_nitrate <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+## 1 site
+
+#pH
+
+parameterCd<- c("00400", "00403")
+
+DC_pH <-  readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+#Dissolved Oxygen
+
+#Dissolved Organic Carbon
+
+
+```
+
