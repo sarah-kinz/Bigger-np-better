@@ -5,10 +5,6 @@ date: "5/28/2021"
 output: html_document
 ---
 
-DID IT WOke???
-
-
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -55,10 +51,13 @@ VA_discharge <- readNWISdv(siteNumber, parameterCd,
 
 ## 4 sites
 
-VA_discharge%>%group_by(site_no)%>%summarise(Mean= mean(Flow), Min= min(Flow), Max= max(Flow), Count= )
+VA_discharge_table<-VA_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(Flow), Min= min(Flow), Max= max(Flow), n= sum(Observation))
 
 more_VA_discharge<- readNWISqw(siteNumber, parameterCd, 
         startDate, endDate)%>% renameNWISColumns()
+
+more_VA_discharge_table<-more_VA_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
+
 ## 11 sites
 
 # Temp
@@ -76,6 +75,8 @@ parameterCd <- ("00631")
 
 VA_nitrate <- readNWISqw(siteNumber, parameterCd, 
       startDate, endDate)
+
+VA_nitrate_table<-VA_nitrate%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
 
 ## 85 sites
 
@@ -119,10 +120,14 @@ WV_discharge <- readNWISdv(siteNumber, parameterCd,
 
 ## 3 sites
 
+WV_discharge_table<-WV_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(Flow), Min= min(Flow), Max= max(Flow), n= sum(Observation))
+
 more_WV_discharge<- readNWISqw(siteNumber, parameterCd, 
         startDate, endDate)%>% renameNWISColumns()
 
 ## 2 sites
+
+more_WV_discharge_table<-more_WV_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
 
 # Temp
 
@@ -141,6 +146,8 @@ WV_nitrate <- readNWISqw(siteNumber, parameterCd,
       startDate, endDate)
 
 ## 92 sites
+
+WV_nitrate_table<-WV_nitrate%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
 
 #pH
 
@@ -178,6 +185,8 @@ parameterCd<- "00060"
 MD_discharge <- readNWISdv(siteNumber, parameterCd, 
         startDate, endDate)%>% renameNWISColumns()
 
+MD_discharge_table<-MD_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(Flow), Min= min(Flow), Max= max(Flow), n= sum(Observation))
+
 ## 1 site
 
 more_MD_discharge<- readNWISqw(siteNumber, parameterCd, 
@@ -202,6 +211,8 @@ MD_nitrate <- readNWISqw(siteNumber, parameterCd,
       startDate, endDate)
 
 ## 61 sites
+
+MD_nitrate_table<-MD_nitrate%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
 
 #pH
 
@@ -322,6 +333,8 @@ NY_nitrate <- readNWISqw(siteNumber, parameterCd,
 
 ## 52 sites
 
+NY_nitrate_table<-NY_nitrate%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
+
 #pH
 
 parameterCd<- c("00400", "00403")
@@ -360,10 +373,14 @@ PA_discharge <- readNWISdv(siteNumber, parameterCd,
 
 ## 1 site
 
+PA_discharge_table<-PA_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(Flow), Min= min(Flow), Max= max(Flow), n= sum(Observation))
+
 more_PA_discharge<- readNWISqw(siteNumber, parameterCd, 
         startDate, endDate)%>% renameNWISColumns()
 
 ## 59 sites
+
+more_PA_discharge_table<-more_PA_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
 
 # Temp
 
@@ -382,6 +399,8 @@ PA_nitrate <- readNWISqw(siteNumber, parameterCd,
       startDate, endDate)
 
 ## 80 sites
+
+PA_nitrate_table<-PA_nitrate%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
 
 #pH
 
