@@ -1,0 +1,14 @@
+Metadata for NWIS Sites exported from NWIS Mapper
+(Exporter Version 1.1.0)
+Time and Date data were exported: 2021-06-28 18:24
+Request Number: d8d47d54-352f-4875-837d-50af7e5ac514
+Number of sites in request: 190
+Longitude and Latitude extent of request:
+	West: -80.008
+	South: 40.632
+	East: -74.504
+	North: 42.006
+Sites Type: Springs
+Sites Status: Inactive
+</br><b>Requested type of data for sites:</b>&nbsp;&nbsp;Water Quality
+

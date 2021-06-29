@@ -1,0 +1,4 @@
+SiteNumber, SiteName, SiteCategory, SiteAgency, SiteLongitude, SiteLatitude, SiteNWISURL
+"391851078265401"," Hmp-0370S","SP","USGS",-78.4480638,39.31426698,"https://waterdata.usgs.gov/nwis/inventory?agency_code=USGS&site_no=391851078265401"
+"391950078032900"," Ber-0039(Lefevre Spring)","SP","USGS",-78.0579722,39.33155556,"https://waterdata.usgs.gov/nwis/inventory?agency_code=USGS&site_no=391950078032900"
+"392010077455201"," Jef-0504S","SP","USGS",-77.76416009,39.33621179,"https://waterdata.usgs.gov/nwis/inventory?agency_code=USGS&site_no=392010077455201"

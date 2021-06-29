@@ -1,0 +1,2 @@
+SiteNumber, SiteName, SiteCategory, SiteAgency, SiteLongitude, SiteLatitude, SiteNWISURL
+"425908075504301","M 210, NY","SP","USGS",-75.84527778,42.9856111,"https://waterdata.usgs.gov/nwis/inventory?agency_code=USGS&site_no=425908075504301"

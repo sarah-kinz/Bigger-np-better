@@ -1,0 +1,6 @@
+SiteNumber, SiteName, SiteCategory, SiteAgency, SiteLongitude, SiteLatitude, SiteNWISURL
+"393738078134501"," Mrg-0084S","SP","WV002",-78.2288966,39.6273154,"https://waterdata.usgs.gov/nwis/inventory?agency_code=WV002&site_no=393738078134501"
+"392812077585900"," Ber-0251(Kilmer Spring)","SP","USGS",-77.9833319,39.470654,"https://waterdata.usgs.gov/nwis/inventory?agency_code=USGS&site_no=392812077585900"
+"01569460","Big Spring Creek at Big Spring, PA","SP","USGS",-77.4072075,40.129533,"https://waterdata.usgs.gov/nwis/inventory?agency_code=USGS&site_no=01569460"
+"400945077185901","CU  SP36","SP","USGS",-77.3163056,40.16238889,"https://waterdata.usgs.gov/nwis/inventory?agency_code=USGS&site_no=400945077185901"
+"403447075331801","LE  SP15 Schantz Spring near Wescosville, PA","SP","USGS",-75.5546299,40.5798189,"https://waterdata.usgs.gov/nwis/inventory?agency_code=USGS&site_no=403447075331801"

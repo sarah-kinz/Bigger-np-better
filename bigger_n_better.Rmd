@@ -4,6 +4,13 @@ author: "SarahKinz"
 date: "5/28/2021"
 output: html_document
 ---
+What do I want to know about each spring... Let's stick to basics
+
+How many springs are present in the state?
+How many springs have discharge?
+How many springs have nitrate?
+How many are within range range?
+How many are in range, but do not have the other measurement?
 
 
 ```{r setup, include=FALSE}
@@ -229,6 +236,8 @@ MD_pH <-  readNWISqw(siteNumber, parameterCd,
 #Dissolved Organic Carbon
 
 ```
+
+Delaware seems to be accurate. There are two other inactive springs in Delaware, but there is no data for them aside from presences. The one site that has data does not have the data I need.
 
 ### DELAWARE
 ```{r}
@@ -486,6 +495,28 @@ DC_pH <-  readNWISqw(siteNumber, parameterCd,
 
 #Dissolved Organic Carbon
 
+
+```
+
+Doing it the old fashioned way
+
+# APPROXIMATELY THE ENTIRE CHESAPEAKE BAY WATERSHED 
+```{r}
+inactive_p1<- read_csv("Inactive Springs Bradford to Rochester/NWISMapperExport.csv")
+
+inactive_p2<- read_csv("Inactive Springs Charlottesville to Martinsburg/NWISMapperExport.csv")
+
+inactive_p3<- read_csv("Inactive Springs Danville to Charlottesville/NWISMapperExport.csv")
+
+inactive_p4<- read_csv("Inactive Springs Martinsburg to State College/NWISMapperExport.csv")
+
+inactive_p5<- read_csv("Inactive Springs State College to Bradford/NWISMapperExport.csv")
+
+active_p1<- read_csv("Active Springs Charlottesville to Martinsburg/NWISMapperExport.csv")
+
+active_p2<- read_csv("Active Springs Bradford to Rochester/NWISMapperExport.csv")
+
+active_p3<- read_csv("Active Spring Martinsburg to State College/NWISMapperExport.csv")
 
 ```
 
