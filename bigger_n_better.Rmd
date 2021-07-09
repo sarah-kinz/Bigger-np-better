@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dataRetrieval)
 library(tidyverse)
 library(dplyr)
+library(naniar)
 ```
 
 I got the bounding boxes from https://anthonylouisdagostino.com/bounding-boxes-for-all-us-states/.
@@ -36,6 +37,8 @@ DC <- c(-77.119759, 38.791645, -76.909395, 38.99511)
 
 ### VIRGINIA
 ```{r}
+
+### I am reading in the data to see what I have
 
 ### VIRGINIA
 
@@ -58,14 +61,41 @@ VA_discharge <- readNWISdv(siteNumber, parameterCd,
 
 ## 4 sites
 
-VA_discharge_table<-VA_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(Flow), Min= min(Flow), Max= max(Flow), n= sum(Observation))
+VA_discharge_table<-VA_discharge%>%mutate(Observation= 1, GPM=Flow*448.83)%>%group_by(site_no)%>%summarise(Median= median(GPM), Min= min(GPM), Max= max(GPM), n= sum(Observation))
 
 more_VA_discharge<- readNWISqw(siteNumber, parameterCd, 
         startDate, endDate)%>% renameNWISColumns()
 
-more_VA_discharge_table<-more_VA_discharge%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
+more_VA_discharge_table<-more_VA_discharge%>%mutate(Observation= 1, GPM=result_va*448.83)%>%group_by(site_no)%>%summarise(Median= median(GPM), Min= min(GPM), Max= max(GPM), n= sum(Observation))
+
+
+double_VA_discharge<- rbind(VA_discharge_table, more_VA_discharge_table)%>%filter(Median> 90, Median<1100)
 
 ## 11 sites
+
+#Nitrate
+
+#Ask about using 00631 vs 00630, I am using 00630 for now because it matches
+
+parameterCd <- ("00630")
+
+VA_nitrate_unfiltered <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+VA_nitrate_table_unfiltered<-VA_nitrate_unfiltered%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
+
+parameterCd <- ("00631")
+
+VA_nitrate_filtered <- readNWISqw(siteNumber, parameterCd, 
+      startDate, endDate)
+
+VA_nitrate_table_filtered<-VA_nitrate_filtered%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
+
+
+VA_combo_nirate_table<- rbind(VA_nitrate_table_unfiltered, VA_nitrate_table_filtered)
+
+## 8 sites
+
 
 # Temp
 
@@ -75,17 +105,6 @@ VA_temp <- readNWISqw(siteNumber, parameterCd,
         startDate, endDate)%>% renameNWISColumns()
 
 ## 198 sites
-
-#Nitrate
-
-parameterCd <- ("00631")
-
-VA_nitrate <- readNWISqw(siteNumber, parameterCd, 
-      startDate, endDate)
-
-VA_nitrate_table<-VA_nitrate%>%mutate(Observation= 1)%>%group_by(site_no)%>%summarise(Mean= mean(result_va), Min= min(result_va), Max= max(result_va), n= sum(Observation))
-
-## 85 sites
 
 #pH
 
@@ -102,7 +121,79 @@ VA_pH <-  readNWISqw(siteNumber, parameterCd,
 
 # you can add the state data you have here:)
 
+# Joining VA nitrate together... Just reading it in
+
+DEQ_nitrate<- read_csv("DEQ_Water_Quality.csv")
+
+
+#Joining VA discharge together... Just reading it in
+
+DEQ_discharge<- read_csv("VDEQ_Springs.csv")
+
+# JOining VA discharge and nitrate together... Probs not yet. 
+
+
 ```
+
+
+### VIRGINIA ANALYSIS (trying to do remember what you lost)
+```{r}
+
+# consolidating DEQ_nitrate
+
+refined_DEQ_WQ<- DEQ_nitrate%>%select(OBJECTID, ORIGINAL_WQ_DATA_SET, USGS_SITE_NUMBER, DEQ_WELL_NUMBER, OWNER, LAT83dd, LONG83dd, SAMPLE_COLLECTION_DATE, pH_FIELD_STANDARD_UNITS, pH_STANDARD_UNITS, CARBON_TOTAL_mg_L, CARBON_INORGANIC_FILTERED_mg_L, CARBON_INORGANIC_mg_L, CARBON_ORGANIC_FILTERED_mg_L, CARBON_ORGANIC_mg_L, OWNER_SITE,NITRATE_PLUS_NITRITE_FILTERED_mg_L_N,NITRATE_PLUS_NITRITE_mg_L_N, NITRATE_FILTERED_mg_L_N, NITRATE_mg_L_N, SPRING_NAME, SITE_COMMENTS, TOPO_SETTING, DATA_COLLECTOR_SITE, GENERAL_LITHOLOGY, MAJOR_BASIN_NAME, VDOF_LAND_USE, PROVINCE)
+
+# smaller nitrate
+
+small_DEQ_nitrate<- DEQ_nitrate%>%select(DEQ_WELL_NUMBER, NITRATE_PLUS_NITRITE_mg_L_N)
+
+# consolidating DEQ_discharge data
+
+refined_DEQ_discharge<- DEQ_discharge%>% select(OBJECTID, DEQ_NUMBER, LATNAD83DD, LONGNAD83D, DATE_MEASURED, DISCHARGE_METHOD, DISCHARGE_GPM, DATA_SOURCE, pH, FIELD_COMMENTS, SPRING_NAME, USGS_SITE_ID, TOPO_SETTING, COUNTY)
+
+#smaller discharge
+
+small_DEQ_discharge<- DEQ_discharge%>% select(DEQ_NUMBER, DISCHARGE_GPM)
+
+# joined summary of springs in range
+
+small_DEQ_nitrate_table<-small_DEQ_nitrate%>%filter(NITRATE_PLUS_NITRITE_mg_L_N>=0)%>%mutate(Observation=1)%>%
+group_by(DEQ_WELL_NUMBER)%>%summarise('Median Nitrate (mg/L)'=median(NITRATE_PLUS_NITRITE_mg_L_N), 'Mean Nitrate (mg/L)'= mean(NITRATE_PLUS_NITRITE_mg_L_N), 'Max Nitrate (mg/L)'= max(NITRATE_PLUS_NITRITE_mg_L_N), 'Min nitrate (mg/L)'=min(NITRATE_PLUS_NITRITE_mg_L_N), Observation= sum(Observation))
+
+nitrate_criteria<- small_DEQ_nitrate_table%>%filter(`Median Nitrate (mg/L)`>= 3.0)
+
+
+####### THERE ARE 49 SPRINGS THAT MEET NITRATE CRITERIA #######
+
+small_DEQ_discharge_table<-small_DEQ_discharge%>%filter(DISCHARGE_GPM>=0)%>%mutate(Observation=1)%>%group_by(DEQ_NUMBER)%>%summarise('Median Discharge (GPM)'=median(DISCHARGE_GPM), 'Mean Discharge (GPM)'= mean(DISCHARGE_GPM), 'Max Discharge (GPM)'= max(DISCHARGE_GPM), 'Min Discharge (GPM)'=min(DISCHARGE_GPM), Observation= sum(Observation))
+
+
+discharge_criteria<-small_DEQ_discharge_table%>%filter(`Median Discharge (GPM)`<= 1100 & `Median Discharge (GPM)`>= 90)
+
+####### THERE ARE 133 SPRINGS THAT MEET DISCHARGE CRITERIA #######
+
+small_picture<- full_join(small_DEQ_discharge_table, small_DEQ_nitrate_table, c("DEQ_NUMBER"="DEQ_WELL_NUMBER"))%>%filter(`Median Discharge (GPM)`<= 1100,`Median Discharge (GPM)`>= 90, `Median Nitrate (mg/L)`>= 3.00)
+
+####### THERE ARE 8 SPRINGS THAT MEET BOTH CRITERIA #######
+
+### Finding out the info to create the bargraph 
+
+small_DEQ_nitrate[small_DEQ_nitrate == -9999]<- NA
+
+VA_nitrate_summary<-refined_DEQ_WQ%>%mutate(Observation= 1)%>%group_by(DEQ_WELL_NUMBER)%>%summarise('Median Nitrate (mg/L)'=median(NITRATE_PLUS_NITRITE_mg_L_N, na.rm = TRUE), 'Mean Nitrate (mg/L)'= mean(NITRATE_PLUS_NITRITE_mg_L_N, na.rm = TRUE), 'Max Nitrate (mg/L)'= max(NITRATE_PLUS_NITRITE_mg_L_N, na.rm = TRUE), 'Min nitrate (mg/L)'=min(NITRATE_PLUS_NITRITE_mg_L_N, na.rm = TRUE), Observation= sum(Observation))
+
+
+refined_DEQ_discharge[refined_DEQ_discharge == -9999]<- NA
+
+
+### Actually creating that stupid graph again
+
+
+```
+
+
+
+
 
 ### WEST VIRGINIA
 ```{r}
@@ -502,6 +593,9 @@ Doing it the old fashioned way
 
 # APPROXIMATELY THE ENTIRE CHESAPEAKE BAY WATERSHED 
 ```{r}
+
+### Standard Detail Data (coordinates, site number, etc)
+
 inactive_p1<- read_csv("Inactive Springs Bradford to Rochester/NWISMapperExport.csv")
 
 inactive_p2<- read_csv("Inactive Springs Charlottesville to Martinsburg/NWISMapperExport.csv")
@@ -517,6 +611,24 @@ active_p1<- read_csv("Active Springs Charlottesville to Martinsburg/NWISMapperEx
 active_p2<- read_csv("Active Springs Bradford to Rochester/NWISMapperExport.csv")
 
 active_p3<- read_csv("Active Spring Martinsburg to State College/NWISMapperExport.csv")
+
+#### Water Quality Data
+
+wq_inactive_p1<- read_csv("Inactive Springs WQ Bradford to Rochester/NWISMapperExport.csv")
+
+wq_inactive_p2<- read_csv("Inactive Springs WQ Charlottesville to Martinsburg/NWISMapperExport.csv")
+
+wq_inactive_p3<- read_csv("Inactive Springs WQ Danville to Charlottesville/NWISMapperExport.csv")
+
+wq_inactive_p4<- read_csv("Inactive Springs WQ Martinsburg to State College/NWISMapperExport.csv")
+
+wq_inactive_p5<- read_csv("Inactive Springs WQ State College to Bradford/NWISMapperExport.csv")
+
+wq_active_p1<- read_csv("Active Springs WQ Charlottesville to Martinsburg/NWISMapperExport.csv")
+
+wq_active_p2<- read_csv("Active Springs WQ Bradford to Rochester/NWISMapperExport.csv")
+
+wq_active_p3<- read_csv("Active Spring WQ Martinsburg to State College/NWISMapperExport.csv")
 
 ```
 
