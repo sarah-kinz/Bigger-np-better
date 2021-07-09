@@ -19,6 +19,7 @@ library(dataRetrieval)
 library(tidyverse)
 library(dplyr)
 library(naniar)
+library(ggplot2)
 ```
 
 I got the bounding boxes from https://anthonylouisdagostino.com/bounding-boxes-for-all-us-states/.
@@ -157,7 +158,7 @@ small_DEQ_discharge<- DEQ_discharge%>% select(DEQ_NUMBER, DISCHARGE_GPM)
 
 # joined summary of springs in range
 
-small_DEQ_nitrate_table<-small_DEQ_nitrate%>%filter(NITRATE_PLUS_NITRITE_mg_L_N>=0)%>%mutate(Observation=1)%>%
+small_DEQ_nitrate_table<-small_DEQ_nitrate%>%filter(NITRATE_PLUS_NITRITE_mg_L_N>=-1)%>%mutate(Observation=1)%>%
 group_by(DEQ_WELL_NUMBER)%>%summarise('Median Nitrate (mg/L)'=median(NITRATE_PLUS_NITRITE_mg_L_N), 'Mean Nitrate (mg/L)'= mean(NITRATE_PLUS_NITRITE_mg_L_N), 'Max Nitrate (mg/L)'= max(NITRATE_PLUS_NITRITE_mg_L_N), 'Min nitrate (mg/L)'=min(NITRATE_PLUS_NITRITE_mg_L_N), Observation= sum(Observation))
 
 nitrate_criteria<- small_DEQ_nitrate_table%>%filter(`Median Nitrate (mg/L)`>= 3.0)
@@ -165,29 +166,52 @@ nitrate_criteria<- small_DEQ_nitrate_table%>%filter(`Median Nitrate (mg/L)`>= 3.
 
 ####### THERE ARE 49 SPRINGS THAT MEET NITRATE CRITERIA #######
 
-small_DEQ_discharge_table<-small_DEQ_discharge%>%filter(DISCHARGE_GPM>=0)%>%mutate(Observation=1)%>%group_by(DEQ_NUMBER)%>%summarise('Median Discharge (GPM)'=median(DISCHARGE_GPM), 'Mean Discharge (GPM)'= mean(DISCHARGE_GPM), 'Max Discharge (GPM)'= max(DISCHARGE_GPM), 'Min Discharge (GPM)'=min(DISCHARGE_GPM), Observation= sum(Observation))
+small_DEQ_discharge_table<-small_DEQ_discharge%>%filter(DISCHARGE_GPM>=-1)%>%mutate(Observation=1)%>%group_by(DEQ_NUMBER)%>%summarise('Median Discharge (GPM)'=median(DISCHARGE_GPM), 'Mean Discharge (GPM)'= mean(DISCHARGE_GPM), 'Max Discharge (GPM)'= max(DISCHARGE_GPM), 'Min Discharge (GPM)'=min(DISCHARGE_GPM), Observation= sum(Observation))
 
 
 discharge_criteria<-small_DEQ_discharge_table%>%filter(`Median Discharge (GPM)`<= 1100 & `Median Discharge (GPM)`>= 90)
 
 ####### THERE ARE 133 SPRINGS THAT MEET DISCHARGE CRITERIA #######
 
-small_picture<- full_join(small_DEQ_discharge_table, small_DEQ_nitrate_table, c("DEQ_NUMBER"="DEQ_WELL_NUMBER"))%>%filter(`Median Discharge (GPM)`<= 1100,`Median Discharge (GPM)`>= 90, `Median Nitrate (mg/L)`>= 3.00)
+small_picture<- full_join(small_DEQ_discharge_table, small_DEQ_nitrate_table, c("DEQ_NUMBER"="DEQ_WELL_NUMBER"))
+
+smaller_picture<-small_picture%>%filter(`Median Discharge (GPM)`<= 1100,`Median Discharge (GPM)`>= 90, `Median Nitrate (mg/L)`>= 3.00)
 
 ####### THERE ARE 8 SPRINGS THAT MEET BOTH CRITERIA #######
 
 ### Finding out the info to create the bargraph 
 
-small_DEQ_nitrate[small_DEQ_nitrate == -9999]<- NA
+graph_info<- full_join(small_DEQ_discharge, small_DEQ_nitrate, c("DEQ_NUMBER"="DEQ_WELL_NUMBER"))
 
-VA_nitrate_summary<-refined_DEQ_WQ%>%mutate(Observation= 1)%>%group_by(DEQ_WELL_NUMBER)%>%summarise('Median Nitrate (mg/L)'=median(NITRATE_PLUS_NITRITE_mg_L_N, na.rm = TRUE), 'Mean Nitrate (mg/L)'= mean(NITRATE_PLUS_NITRITE_mg_L_N, na.rm = TRUE), 'Max Nitrate (mg/L)'= max(NITRATE_PLUS_NITRITE_mg_L_N, na.rm = TRUE), 'Min nitrate (mg/L)'=min(NITRATE_PLUS_NITRITE_mg_L_N, na.rm = TRUE), Observation= sum(Observation))
+graph_info[graph_info == -9999] <- NA
 
+graph_info<-graph_info%>%group_by(DEQ_NUMBER)%>%summarise('Median Nitrate (mg/L)'=median(NITRATE_PLUS_NITRITE_mg_L_N, na.rm=TRUE), 'Median Discharge (GPM)'= median(DISCHARGE_GPM, na.rm=TRUE))
 
-refined_DEQ_discharge[refined_DEQ_discharge == -9999]<- NA
-
+test<- graph_info%>%
+  mutate(category = case_when(`Median Discharge (GPM)`== as.character(NA) &
+                              `Median Nitrate (mg/L)`== as.character(NA) ~ "no data",
+                              `Median Discharge (GPM)`== as.character(NA) &
+                              `Median Nitrate (mg/L)`<= 0 ~ "no discharge data",
+                              `Median Discharge (GPM)`<= 0 &
+                              `Median Nitrate (mg/L)`== as.character(NA) ~ "no nitrate data",
+                              `Median Discharge (GPM)`<= 1100  &
+                              `Median Discharge (GPM)`>= 90  &
+                              `Median Nitrate (mg/L)`>= 3.0 ~ "in range",
+                              `Median Discharge (GPM)`<= 90  &
+                              `Median Discharge (GPM)`>= 1100  &
+                              `Median Nitrate (mg/L)`<= 3.0 ~ "out of range"))
+                              
+    
 
 ### Actually creating that stupid graph again
 
+graph<-data.frame("Category"= c("No Nitrate Data", "No Discharge Data",
+          "No Data","Out of Range", "In Range"),
+           "Quantity"= c(232,117, 157, 108, 8))
+
+ggplot(data=graph, aes(x=Category, y=Quantity)) +
+  geom_bar(stat="identity", color="blue", fill= "blue")+
+  theme_classic()
 
 ```
 
