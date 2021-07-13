@@ -7,24 +7,113 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(leaflet)
+library(sf)
+library(raster)
+library(dplyr)
+library(spData)
+library(spDataLarge)
+library(tmap)
+
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Let's create a static map first
+```{r}
+### reading in and formating discharge data
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+DEQ_discharge<- read_csv("VDEQ_Springs.csv")
 
-```{r cars}
-summary(cars)
+discharge<- DEQ_discharge%>%
+  dplyr::select(DEQ_NUMBER, LONGNAD83D, LATNAD83DD,DISCHARGE_GPM)%>%
+  filter(DISCHARGE_GPM>=-1)%>%
+  group_by(DEQ_NUMBER)%>% 
+  summarise(LONGNAD83D, LATNAD83DD, GPM =median(DISCHARGE_GPM))%>%
+  distinct()
+
+
+discharge<- discharge%>%
+  mutate(Class= case_when(GPM <= 85.0 ~ "0 - 85",
+                          GPM > 85.0 & GPM <=275.0 ~ "85.1 - 275",
+                          GPM > 275.0 & GPM <=550.0 ~ "275.1 - 550",
+                          GPM > 550.0 & GPM <= 825.0 ~ "550.1 - 825",
+                          GPM > 825.0 & GPM <= 1100.0 ~ "825.1 - 1100",
+                          GPM > 1100 ~ "1100.1 - 8527"))
+  
+
+
+map_discharge<- st_as_sf(discharge, coords = c("LONGNAD83D","LATNAD83DD"), crs = 4326 )
+
+st_crs(map_discharge)
+
+tmap_mode("plot")
+
+va <- shapefile("VirginiaAdministrativeBoundary.shp/VirginiaCounty.shp")
+st_crs(va)
+
+va<-st_as_sf(va)
+
+va<-st_transform(va, crs = 4326)
+
+tm_shape(va)+
+  tm_borders()+
+  tm_shape(map_discharge)+
+  tm_dots("GPM", palette= "blue")
+
+ 
+### creating map points 
+ 
+
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+#### CODE I MAY USE LATER...
+```{r}
+# test<- discharge%>%dplyr::select(LATNAD83DD,LONGNAD83D)
+# 
+# test$DEQ_NUMBER<- NULL
+# 
+# points <- SpatialPoints(test, proj4string = CRS("+proj=longlat +datum=WGS84"))
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+### reading in map data for Virginia
+
+DEQ_springs<- read_csv("VDEQ_Springs.csv")
+
+Map_DEQ_springs<- DEQ_springs%>%dplyr::select(LONGNAD83D, LATNAD83DD)%>%drop_na()
+
+Map_DEQ_springs <- SpatialPoints(Map_DEQ_springs, proj4string = CRS("+proj=longlat +datum=WGS84"))
+
+st_crs(Map_DEQ_springs)
+
+###
+
+va <- shapefile("VirginiaAdministrativeBoundary.shp/VirginiaCounty.shp")
+st_crs(va)
+
+va_test <- spTransform(va, CRS(proj4string(Map_DEQ_springs)))
+st_crs(va_test)
+
+ 
+
+### 
+ tm_shape(va_test) +
+  tm_borders()+
+  tm_shape(Map_DEQ_springs)+
+  tm_dots(col = "blue")+
+tm_add_legend(type = 'symbol',
+              labels = c('USGS', 'VADEQ'),
+              col = c('red', 'blue'),
+              title = "Spring Type",
+              is.portrait = TRUE)+
+tm_layout(main.title = "USGS and VDEQ Springs in Virginia",
+            main.title.size = 1,
+            title.position = c("center", "TOP"),
+            legend.position = c("left", "center"))+
+tm_compass(type = "arrow", position = c("right", "top")) +
+tm_scale_bar(position = c("left", "top"))
+
+
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
