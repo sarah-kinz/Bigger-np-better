@@ -34,12 +34,10 @@ discharge<- DEQ_discharge%>%
 
 
 discharge<- discharge%>%
-  mutate(Class= case_when(GPM <= 85.0 ~ "0 - 85",
-                          GPM > 85.0 & GPM <=275.0 ~ "85.1 - 275",
-                          GPM > 275.0 & GPM <=550.0 ~ "275.1 - 550",
-                          GPM > 550.0 & GPM <= 825.0 ~ "550.1 - 825",
-                          GPM > 825.0 & GPM <= 1100.0 ~ "825.1 - 1100",
-                          GPM > 1100 ~ "1100.1 - 8527"))
+  mutate(Class= case_when(GPM <= 40 ~ "0-40",
+                          GPM > 40 & GPM <=700 ~ "40 - 700",
+                          GPM > 700 & GPM <=1400 ~ "700 - 1400",
+                          GPM > 1400 ~ "1400-8527"))
   
 
 
@@ -47,7 +45,11 @@ map_discharge<- st_as_sf(discharge, coords = c("LONGNAD83D","LATNAD83DD"), crs =
 
 st_crs(map_discharge)
 
-tmap_mode("plot")
+### Setting the mood... I mean mode
+
+tmap_mode("view")
+
+### Reading in VA shapefile and prepping it
 
 va <- shapefile("VirginiaAdministrativeBoundary.shp/VirginiaCounty.shp")
 st_crs(va)
@@ -56,20 +58,76 @@ va<-st_as_sf(va)
 
 va<-st_transform(va, crs = 4326)
 
-tm_shape(va)+
-  tm_borders()+
-  tm_shape(map_discharge)+
-  tm_dots("GPM", palette= "blue")
+### reading in the chessy watershed boundary
 
- 
-### creating map points 
+watersheds <- st_read("Chesapeake_Bay_Watershed_Boundary/Chesapeake_Bay_Watershed_Boundary.shp")
+
+st_crs(watersheds)
+
+watersheds<-st_transform(watersheds, crs = 4326)
+
+sub_basins <- st_read("Chessy_Subbassins/Chesapeake_Bay_Major_Basin_Summary_Groups.shp")
+
+sub_basins<-st_transform(sub_basins, crs = 4326)
+
+test<- map_discharge[sub_basins, ]
+
+### Actually creating the visuals
+
+discharge_map<-
+  tm_shape(sub_basins)+
+  tm_borders()+
+  tm_shape(test)+
+  tm_dots("GPM", breaks = c(0,40,700,1400, Inf), size= 0.08, id= "DEQ_NUMBER", title= "Class of Median Discharge (GPM)", palette= "Blues")
+
+
+  
+ tmap_save(discharge_map, "VA_discharge_map.html")
  
 
 ```
 
 
+### Messing Around with Layers to Add to the Map
+```{r}
+chessy_riv_segments<- read_csv("Chesapeake_Bay_Watershed_Model_Phase_6_Land_River_Segments.csv")
+
+delivery_factor<- read_csv("DeliveryFactor_CAST.csv")
+
+# general_info <- read_csv("PA_general_info.csv")
+
+library(geojsonsf)
+library(sf)       ## for sf print methods
+
+test <- geojsonsf::geojson_sf("CBW_Phase_6_Land_River.geojson")
+
+
+
+```
+
+
+
 #### CODE I MAY USE LATER...
 ```{r}
+  #   tm_layout(main.title = "Discharge (GPM) Volume Distribution of Springs in Virginia",
+#             main.title.size = 1,
+#             title.position = c("center", "TOP"),
+#             legend.position = c("left", "center"))+
+# tm_compass(type = "arrow", position = c("right", "top")) +
+# tm_scale_bar(position = c("left", "top"))
+
+
+# tmap_save(discharge_map, "VA_discharge_map.html")
+ 
+### creating map points 
+
+
+
+
+
+
+
+
 # test<- discharge%>%dplyr::select(LATNAD83DD,LONGNAD83D)
 # 
 # test$DEQ_NUMBER<- NULL

@@ -543,17 +543,27 @@ PA_pH <-  readNWISqw(siteNumber, parameterCd,
 
 ## Using data from the state agency
 
-PA_discharge<- read.csv("PA_spring_Discharge.csv")
-PA_discharge<- PA_discharge%>%filter(Discharge.gpm.>=90)%>%
-  filter(Discharge.gpm.<=1100)
+PA_discharge_state<- read.csv("PA_spring_Discharge.csv")
 
-PA_chemical<- read.csv("PA_Springs_Chemical.csv")
+
+PA_discharge_state_small<- PA_discharge_state%>%filter(Discharge.gpm.>=40)%>%
+  filter(Discharge.gpm.<=1400)
+
+### PA Chemical Stuff... Still working on this
+
+PA_chemical<- read_csv("PA_Springs_Chemical.csv")
 
 PA_chemical_small<- PA_chemical%>%
-  pivot_wider(names_from = ParamLongName, values_from = QWValue)%>%select(PASpringID,QWDescription,County,Date,`ELEVATION (FEET NGVD) `,`SAMPLING DEPTH (FEET) `,`GAGE HEIGHT FEET `,`PH WATER WHOLE LABORATORY STANDARD UNITS `,`PH WATER WHOLE FIELD STANDARD UNITS `,`FLOW RATE INSTANTANEOUS (GALLONS/MINUTE) `,`CARBON DIOXIDE DISSOLVED (MG/L AS CO2) `,`CARBON ORGANIC TOTAL (MG/L AS C) `,`OXYGEN DISSOLVED (MG/L) `,`DISCHARGE INSTANTANEOUS CUBIC FEET PER SECOND `,`DISCHARGE CUBIC FEET PER SECOND `,`NITROGEN DISSOLVED (MG/L AS N) `,`NITROGEN NITRITE DISSOLVED (MG/L AS NO2) `,`NITROGEN NITRITE PLUS NITRATE DISSOLVED (MG/L AS N) `,`NITROGEN NITRITE DISSOLVED MG/L AS N `,`NITROGEN NITRATE TOTAL (MG/L AS N) `,`NITROGEN TOTAL (MG/L AS N) `,`NITROGEN NITRATE TOTAL (MG/L AS N) `,`NITROGEN NITRATE DISSOLVED (MG/L AS NO3) `,`NITROGEN NITRATE DISSOLVED (MG/L AS N) `,`DEPTH BELOW LAND SURFACE (WATER LEVEL) (FEET) `,`WATER TEMPERATURE DEGREES CELSIUS `)
+  pivot_wider(names_from = ParamLongName, values_from = QWValue)%>%dplyr::select(PASpringID,QWDescription,County,Date,`SAMPLING DEPTH (FEET) `,`GAGE HEIGHT FEET `,`PH WATER WHOLE LABORATORY STANDARD UNITS `,`PH WATER WHOLE FIELD STANDARD UNITS `,`FLOW RATE INSTANTANEOUS (GALLONS/MINUTE) `,`CARBON DIOXIDE DISSOLVED (MG/L AS CO2) `,`CARBON ORGANIC TOTAL (MG/L AS C) `,`OXYGEN DISSOLVED (MG/L) `,`DISCHARGE INSTANTANEOUS CUBIC FEET PER SECOND `,`DISCHARGE CUBIC FEET PER SECOND `,`NITROGEN DISSOLVED (MG/L AS N) `,`NITROGEN NITRITE DISSOLVED (MG/L AS NO2) `,`NITROGEN NITRITE PLUS NITRATE DISSOLVED (MG/L AS N) `,`NITROGEN NITRITE DISSOLVED MG/L AS N `,`NITROGEN NITRATE TOTAL (MG/L AS N) `,`NITROGEN TOTAL (MG/L AS N) `,`NITROGEN NITRATE TOTAL (MG/L AS N) `,`NITROGEN NITRATE DISSOLVED (MG/L AS NO3) `,`NITROGEN NITRATE DISSOLVED (MG/L AS N) `,`DEPTH BELOW LAND SURFACE (WATER LEVEL) (FEET) `,`WATER TEMPERATURE DEGREES CELSIUS `)
 
 # There are some hecking high`NITROGEN NITRITE PLUS NITRATE DISSOLVED (MG/L AS N) `) values.
 
+### Reading in coordinates for mapping
+
+PA_state_geninfo<- read_csv("PA_general_info.csv")
+
+
+PA_state_with_discharge_coords<- full_join(PA_state_geninfo, PA_discharge_state, c("PASpringID"="PASpringID"))
 
 ```
 
@@ -613,7 +623,7 @@ DC_pH <-  readNWISqw(siteNumber, parameterCd,
 
 ```
 
-Doing it the old fashioned way
+Doing it the old fashioned way... Which as of  07/21 still is being a pain in the butt. I am not sure what I am doing wrong. Gotta keep working towards it.
 
 # APPROXIMATELY THE ENTIRE CHESAPEAKE BAY WATERSHED 
 ```{r}
