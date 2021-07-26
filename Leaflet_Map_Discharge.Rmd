@@ -15,7 +15,7 @@ library(dplyr)
 library(spData)
 library(spDataLarge)
 library(tmap)
-
+library(rgdal)
 ```
 
 
@@ -82,7 +82,13 @@ discharge_map<-
 
 
   
- tmap_save(discharge_map, "VA_discharge_map.html")
+ # tmap_save(discharge_map, "VA_discharge_map.html")
+ 
+ ### Converting to leaflet format
+ 
+leaflet(test) %>% addTiles() %>%
+addMarkers(label= ~ Class, fillColor = ~ Class,
+            popup = ~paste0(DEQ_NUMBER, "<br/>Discharge: ", GPM))
  
 
 ```
@@ -92,16 +98,32 @@ discharge_map<-
 ```{r}
 chessy_riv_segments<- read_csv("Chesapeake_Bay_Watershed_Model_Phase_6_Land_River_Segments.csv")
 
+# 2058
+
 delivery_factor<- read_csv("DeliveryFactor_CAST.csv")
+
+### 2049
 
 # general_info <- read_csv("PA_general_info.csv")
 
 library(geojsonsf)
 library(sf)       ## for sf print methods
 
-test <- geojsonsf::geojson_sf("CBW_Phase_6_Land_River.geojson")
+test_json<- rgdal::readOGR("CBW_Phase_6_Land_River.geojson")
+
+leaflet(test_json) %>% addTiles()%>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    opacity = 1.0, fillOpacity = 0.5)
+
+test_json<-st_as_sf(test_json)
+
+### 2058
+
+unique(chessy_riv_segments$LndRvrSeg)
+```
 
 
+### CONVERTING TO LEAFLET FROM THE CURRENT TMAP   
+```{r}
 
 ```
 
