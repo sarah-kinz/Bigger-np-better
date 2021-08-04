@@ -85,10 +85,21 @@ discharge_map<-
  # tmap_save(discharge_map, "VA_discharge_map.html")
  
  ### Converting to leaflet format
+
+nhd_wms_url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer"
+
+test$group= cut(test$GPM,
+                breaks = c(0,40,700,1400, Inf), right= FALSE,
+                labels = c("0-40 GPM", "40-700 GPM", "700-1400 GPM", ">1400 GPM"))
  
-leaflet(test) %>% addTiles() %>%
-addMarkers(label= ~ Class, fillColor = ~ Class,
-            popup = ~paste0(DEQ_NUMBER, "<br/>Discharge: ", GPM))
+
+pal = colorFactor(palette = c("aliceblue", "cadetblue1", "cadetblue3", "blue"), domain = test$group)
+
+leaflet(test)%>%
+  addTiles()%>%
+  addCircleMarkers(color = ~pal(group),
+             label= ~ paste0("<br/>DEQ Number: ", DEQ_NUMBER),
+             popup = ~paste0("<br/>Category: ",Class, "<br/>Discharge: ", GPM))
  
 
 ```
@@ -98,27 +109,71 @@ addMarkers(label= ~ Class, fillColor = ~ Class,
 ```{r}
 chessy_riv_segments<- read_csv("Chesapeake_Bay_Watershed_Model_Phase_6_Land_River_Segments.csv")
 
-# 2058
+# 2058...  Kind of the same thing as the json file, but not spatial... LAME!
 
 delivery_factor<- read_csv("DeliveryFactor_CAST.csv")
 
-### 2049
+### 2049 unique land-river-segments.... Less because 
 
 # general_info <- read_csv("PA_general_info.csv")
-
-library(geojsonsf)
-library(sf)       ## for sf print methods
 
 test_json<- rgdal::readOGR("CBW_Phase_6_Land_River.geojson")
 
 leaflet(test_json) %>% addTiles()%>% addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
-    opacity = 1.0, fillOpacity = 0.5)
+    opacity = 1.0, fillOpacity = 0
+    )
 
 test_json<-st_as_sf(test_json)
 
-### 2058
+### 2058 land-river-segments
 
-unique(chessy_riv_segments$LndRvrSeg)
+### Verifying that the values for delivery factors are the same across load sources.
+
+delivery_factor_verification<-delivery_factor%>%group_by(LandRiverSegment)%>%
+  summarise(Min_Bay=min(RiverToBay_TN_Factor), Max_Bay=max(RiverToBay_TN_Factor), Min_River=min(StreamToRiver_TN_Factor), Max_River=max(StreamToRiver_TN_Factor), Min_Water=min(LandToWater_TN_Factor), Max_Water=max(LandToWater_TN_Factor))%>%dplyr::select(LandRiverSegment, Min_Bay)
+
+all(delivery_factor_verification$Min_Bay == delivery_factor_verification$Max_Bay)
+
+### All of them are the same.
+
+
+### UPDATE: It did not work out like I thought. In the new object that I created it said I had 2023 objects, which still does not equal the delivery factors that I have. Okay, now comes the fun part. I am going to crop test_json by the CBW shapefile because it is bigger than the CBW.
+
+# test_json<-st_transform(test_json, crs = 4326)
+# 
+# test<- st_intersection(watersheds, test_json)
+
+### So, let's just try to join the river to bay delivery factors together with their land river segments
+
+segment_with_DF<- full_join(test_json, delivery_factor_verification, by = c("LndRvrSeg" = "LandRiverSegment")) %>% drop_na(Min_Bay)
+
+### Okay, let's make a map now.
+
+bins <- c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, Inf)
+  
+pal<- colorBin("Blues", domain= segment_with_DF$Min_Bay,bins= bins)  
+
+m<- leaflet(segment_with_DF)%>%
+  addTiles()%>%
+  addPolygons(fillColor = ~ pal(Min_Bay),
+              weight = 1,
+              smoothFactor =  0.5,
+              color = "white",
+              fillOpacity = 0.8)%>%
+  addLegend(pal = pal, 
+              values = ~Min_Bay, opacity = 0.7, 
+              title = NULL,
+              position = "bottomright")
+            
+
+m
+
+labels <- paste
+
+### Let's combine the DF map and the discharge map now.
+
+
+
 ```
 
 
